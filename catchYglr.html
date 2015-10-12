@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>catchYglr</title>
+	<style type="text/css">
+		#buyIn{
+			border: 2px solid red;
+		}
+		#buyIn li{
+			margin-bottom:10px;
+		}
+		#status li{
+			margin-bottom:10px;
+		}
+	</style>
+</head>
+<body>
+<h1>抓取Y大的实时信息</h1>
+<div id="buyIn">
+	
+</div>
+<div id="status">
+	
+</div>
+<script type="text/javascript">
+var gui = require('nw.gui');
+var win = gui.Window.get();
+var superagent = require('superagent')
+var cheerio = require('cheerio')
+var url = 'xueqiu.com/6775860272';
+var lastId=0,id=0,buyInCount=0,statusCount=0,index1=0;
+function catchYglr(){
+  superagent
+  .get(url)
+  //.query('user_id=6775860272&page=1&type=&_=1441974756584')
+  .end(function(err,res){
+    if (err){
+    	console.log("err");
+        return;
+    }
+    //console.log(res.text);
+    var $ = cheerio.load(res.text);
+    var str = '';
+    var index=0,indexLast=0;
+    $('script').each(function(){
+      var script = $(this).html();
+      if(script.toString().indexOf('SNB.data.statuses')>0){
+        str=script.toString();
+      }
+    });
+    //console.log(str)
+    index=str.indexOf("statuses")+10;
+    //console.log(index);
+    indexLast=str.lastIndexOf("maxPage")+13;
+    //console.log(indexLast);
+    str=str.slice(index,indexLast)
+    if(str.length<1) return;
+    //console.log(str);
+    var status=JSON.parse(str);
+
+    //排除置顶的帖子
+    if(status.statuses[0].type==3){
+    	//如果是置顶，那么删除第一个数组
+    	var ele = status.statuses.shift();
+    }
+    id=status.statuses[0].id;
+    //console.log(status);
+    //如果有新状态
+    if(id!=lastId){
+      if(status.statuses[0].type==0){
+      	//是Y大的买入信息
+      	console.log(status.statuses[0].description);
+      	buyInCount++;
+      	var buyElement = document.createElement('li');
+      	var buyInNode = document.getElementById('buyIn');
+      	buyElement.appendChild(document.createTextNode(buyInCount+status.statuses[0].description));
+      	buyInNode.appendChild(buyElement);
+      }else{
+      	  //是其他的状态
+	      console.log(status.statuses[0].description);
+	      statusCount++;
+	      var element = document.createElement('li');
+	      var pNode = document.getElementById('status');
+	      //element.appendChild(document.createTextNode(statusCount+"  "+status.statuses[0].description));
+	      element.innerHTML = statusCount+"  "+status.statuses[0].description;
+	      pNode.appendChild(element);
+  	  }
+      var new_win = gui.Window.get(
+            window.open("http://xueqiu.com/6775860272")
+        );
+      new_win.resizeTo(400,400);
+      new_win.setPosition("center");
+      new_win.setAlwaysOnTop(true);
+    }
+    lastId=id;
+    console.log(index1);
+    index1++;
+  });
+}
+
+setInterval(catchYglr,5000);
+
+</script>
+</body>
+</html>

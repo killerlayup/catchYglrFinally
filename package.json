@@ -1,0 +1,39 @@
+{
+
+  "name": "catchYglr-demo",
+
+  "main": "catchYglr.html",
+
+  "nodejs":true,
+
+  "width":100,
+
+  "height":200,
+
+   "window": {
+
+    "title": "catchYglr",
+
+    "toolbar": true, 
+
+    "width": 800, 
+
+    "height": 600,
+
+   "resizable":true,
+
+   "show_in_taskbar":true,
+
+   "frame":true,
+
+   "kiosk":false
+
+  },
+
+  "webkit":{
+
+  "plugin":true
+
+  }
+
+}
